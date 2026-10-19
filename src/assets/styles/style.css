@@ -1,0 +1,145 @@
+.input-style {
+  font: inherit;
+  letter-spacing: inherit;
+  color: currentColor;
+  padding: 4px 0 5px;
+  border: 0;
+  border: 1px solid #959fa9;
+  box-sizing: content-box;
+  background: none;
+  height: 1.4375em;
+  margin: 0;
+  -webkit-tap-highlight-color: transparent;
+  display: block;
+  min-width: 0;
+  width: 90%;
+  -webkit-animation-name: mui-auto-fill-cancel;
+  animation-name: mui-auto-fill-cancel;
+  -webkit-animation-duration: 10ms;
+  animation-duration: 10ms;
+  padding: 16.5px 14px;
+  border-radius: 8px;
+}
+.error-color {
+  color: red;
+  margin-bottom: 5px;
+  margin-top: 5px;
+}
+
+/* Add Section How to Buy */
+.button-style {
+  display: flex;
+  justify-content: flex-end;
+  margin-right: 50px;
+}
+.spacing-form-title {
+  margin-top: 10px;
+}
+
+/* Add Why Us Section - Home Delete Button  */
+.home-section-delete-button {
+  background: #ff4842;
+  color: #fff;
+  margin-left: 10px;
+}
+.home-section-delete-button:hover {
+  background: #ff342d;
+  color: #fff;
+}
+
+/* About Top Heading */
+.about-top-heading {
+  text-transform: capitalize;
+}
+
+/* Why Us Icon Bg */
+.icons-bg-color svg {
+  width: 50px;
+  height: 50px;
+  background: red;
+  border-radius: 50%;
+}
+
+/* Contact Card */
+.contact-card-image {
+  width: 20%;
+  height: auto;
+  margin: auto;
+}
+.contact-card-main {
+  text-align: center;
+}
+.contact-card-title {
+  margin-top: 20px;
+}
+.contact-card-text {
+  margin: auto;
+}
+.edit-contact-form-image {
+  width: 50%;
+  margin-top: 30px;
+}
+
+/* Create Faq Checkbox */
+.checkbox-style {
+  -ms-transform: scale(2); /* IE */
+  -moz-transform: scale(2); /* FF */
+  -webkit-transform: scale(2); /* Safari and Chrome */
+  -o-transform: scale(2); /* Opera */
+  transform: scale(2);
+  padding: 10px;
+  margin-left: 6px !important;
+  margin-top: 10px !important;
+}
+
+/* Blog  */
+.style-status-box {
+  margin-right: 15px;
+}
+.blog-post {
+  border: 1px solid #959fa9;
+  border-radius: 5px;
+}
+.blog-post-image {
+  width: 94%;
+}
+
+/* Blog helperText Style */
+.helper-text-style {
+  font-size: 15px;
+  margin-left: 0;
+  padding-top: 3px;
+  color: #ff4242;
+}
+
+/* Blog Body Text */
+.blog-body-text {
+  text-overflow: ellipsis;
+}
+
+/* Order Details Link */
+.order-details-link {
+  color: #5a5bf0;
+  text-decoration: none;
+}
+
+/* User Details */
+.user-detail-fs {
+  font-size: 17px;
+}
+.user-detail-role {
+  background: #c8facd;
+  color: black;
+  border-radius: 15px;
+  padding: 6px;
+  font-size: 16px;
+}
+
+/* Page Loading */
+.page-loading {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
