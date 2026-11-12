@@ -178,30 +178,31 @@ function Orders(props) {
       sortable: false,
       filterable: false,
       cellClassName: 'order-actions-cell',
-      renderCell: (params) => (
-        <Stack direction="row" spacing={0.5}>
-          <Button
-            component="a"
-            href={`https://www.ytsubscribers.com/track-order/${params.row.orderId}/`}
-            target="_blank"
-            rel="noopener noreferrer"
-            size="small"
-            variant="contained"
-            color="success"
-          >
-            Track
-          </Button>
-          <Button
-            type="button"
-            size="small"
-            variant="contained"
-            color="warning"
-            startIcon={<KeyboardReturnIcon />}
-          >
-            Refund
-          </Button>
-        </Stack>
-      )
+      renderCell: ({ row }) =>
+        row.paymentStatus === 'initiated' ? null : (
+          <Stack direction="row" spacing={0.5}>
+            <Button
+              component="a"
+              href={`https://www.ytsubscribers.com/track-order/${row.orderId}/`}
+              target="_blank"
+              rel="noopener noreferrer"
+              size="small"
+              variant="contained"
+              color="success"
+            >
+              Track
+            </Button>
+            <Button
+              type="button"
+              size="small"
+              variant="contained"
+              color="warning"
+              startIcon={<KeyboardReturnIcon />}
+            >
+              Refund
+            </Button>
+          </Stack>
+        )
     }
   ];
 

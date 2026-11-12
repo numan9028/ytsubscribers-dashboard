@@ -1,23 +1,23 @@
 import * as React from 'react';
-import { Link as RouterLink } from 'react-router-dom';
-//
+import { useDispatch } from 'react-redux';
+import { toast } from 'react-toastify';
 import { styled, alpha } from '@mui/material/styles';
 import {
+  Alert,
   Button,
-  Menu,
-  MenuItem,
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
-  DialogTitle
+  DialogTitle,
+  Menu,
+  MenuItem,
+  Stack,
+  TextField
 } from '@mui/material';
-// MUI ICONS
 import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import PageviewSharpIcon from '@mui/icons-material/PageviewSharp';
 import RestartAltSharpIcon from '@mui/icons-material/RestartAltSharp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import { updateOrderItem } from 'src/Redux/actions/ordersActions';
 
 const StyledMenu = styled((props) => (
   <Menu
@@ -56,96 +56,163 @@ const StyledMenu = styled((props) => (
   }
 }));
 
-export default function OrderActionButton(props) {
+export default function OrderActionButton({ item }) {
+  const dispatch = useDispatch();
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const open = Boolean(anchorEl);
-  const [modalOpen, setModalOpen] = React.useState(false);
+  const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [saving, setSaving] = React.useState(false);
+  const [errorMessage, setErrorMessage] = React.useState('');
+  const [formValues, setFormValues] = React.useState({
+    link: item.link || '',
+    quantity: item.quantity == null ? '' : String(item.quantity),
+    apiOrderId: item.apiOrderId || ''
+  });
+  const menuOpen = Boolean(anchorEl);
+  const menuId = `order-action-menu-${item._id}`;
+  const buttonId = `order-action-button-${item._id}`;
 
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
+  const handleMenuClose = () => setAnchorEl(null);
 
-  const handleDelete = (itemId) => {
-    // dispatch(deletePackage(itemId));
-    setModalOpen(false);
-  };
-
-  const handleMenuClose = () => {
+  const handleEditOpen = () => {
+    setFormValues({
+      link: item.link || '',
+      quantity: item.quantity == null ? '' : String(item.quantity),
+      apiOrderId: item.apiOrderId || ''
+    });
+    setErrorMessage('');
     setAnchorEl(null);
+    setDialogOpen(true);
   };
 
-  const handleClose = () => {
-    setModalOpen(false);
+  const handleDialogClose = () => {
+    if (!saving) {
+      setDialogOpen(false);
+      setErrorMessage('');
+    }
   };
 
-  const handleClickOpen = () => {
-    setModalOpen(true);
+  const handleFieldChange = (event) => {
+    const { name, value } = event.target;
+    setFormValues((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const quantity = Number(formValues.quantity);
+    if (!formValues.link.trim() || !Number.isInteger(quantity) || quantity <= 0) {
+      setErrorMessage('Enter a post link and a whole-number quantity greater than zero.');
+      return;
+    }
+
+    setSaving(true);
+    setErrorMessage('');
+    try {
+      await dispatch(
+        updateOrderItem({
+          id: item._id,
+          link: formValues.link.trim(),
+          quantity,
+          apiOrderId: formValues.apiOrderId.trim()
+        })
+      );
+      setDialogOpen(false);
+      toast.success('Post details updated successfully.');
+    } catch (error) {
+      setErrorMessage(
+        error.response?.data?.message || 'Unable to update post details. Please try again.'
+      );
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
-    <div>
+    <>
       <Button
-        id="demo-customized-button"
-        aria-controls={open ? 'demo-customized-menu' : undefined}
+        id={buttonId}
+        aria-controls={menuOpen ? menuId : undefined}
         aria-haspopup="true"
-        aria-expanded={open ? 'true' : undefined}
+        aria-expanded={menuOpen ? 'true' : undefined}
         variant="contained"
         disableElevation
-        onClick={handleClick}
+        onClick={(event) => setAnchorEl(event.currentTarget)}
         endIcon={<KeyboardArrowDownIcon />}
       >
         Action
       </Button>
       <StyledMenu
-        id="demo-customized-menu"
-        MenuListProps={{
-          'aria-labelledby': 'demo-customized-button'
-        }}
+        id={menuId}
+        MenuListProps={{ 'aria-labelledby': buttonId }}
         anchorEl={anchorEl}
-        open={open}
+        open={menuOpen}
         onClose={handleMenuClose}
       >
-        <MenuItem
-          disableRipple
-          component={RouterLink}
-          // to={`/dashboard/orders/edit-order/${props.id}`}
-          to=""
-        >
+        <MenuItem onClick={handleEditOpen} disableRipple>
           <EditIcon />
           Edit
         </MenuItem>
-        <MenuItem onClick={handleClickOpen} disableRipple>
-          <PageviewSharpIcon />
-          Track
-        </MenuItem>
-        <MenuItem onClick={handleClickOpen} disableRipple>
+        <MenuItem onClick={handleMenuClose} disableRipple>
           <RestartAltSharpIcon />
-          Re-Process
+          Reprocessed
         </MenuItem>
-        <MenuItem onClick={handleClickOpen} disableRipple>
-          <DeleteIcon />
-          Delete
-        </MenuItem>
-        <Dialog
-          open={modalOpen}
-          onClose={handleClose}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-        >
-          <DialogTitle id="alert-dialog-title">Confirmation</DialogTitle>
+      </StyledMenu>
+      <Dialog
+        open={dialogOpen}
+        onClose={handleDialogClose}
+        fullWidth
+        maxWidth="xs"
+        aria-labelledby={`edit-post-title-${item._id}`}
+      >
+        <DialogTitle id={`edit-post-title-${item._id}`} sx={{ fontWeight: 700 }}>
+          Edit Post Details
+        </DialogTitle>
+        <form onSubmit={handleSubmit}>
           <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-              Do you want to delete this package?
-            </DialogContentText>
+            <Stack spacing={1.5}>
+              {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
+              <TextField
+                label="Post Id"
+                name="link"
+                value={formValues.link}
+                onChange={handleFieldChange}
+                fullWidth
+                required
+              />
+              <TextField
+                label="Per Post"
+                name="quantity"
+                type="number"
+                value={formValues.quantity}
+                onChange={handleFieldChange}
+                inputProps={{ min: 1, step: 1 }}
+                fullWidth
+                required
+              />
+              <TextField
+                label="API Order ID"
+                name="apiOrderId"
+                value={formValues.apiOrderId}
+                onChange={handleFieldChange}
+                fullWidth
+              />
+            </Stack>
           </DialogContent>
-          <DialogActions>
-            <Button onClick={() => handleDelete(props.id)}>Delete</Button>
-            <Button onClick={handleClose} autoFocus>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button type="submit" variant="contained" disabled={saving}>
+              {saving ? 'Saving...' : 'Submit'}
+            </Button>
+            <Button
+              type="button"
+              variant="contained"
+              color="error"
+              onClick={handleDialogClose}
+              disabled={saving}
+            >
               Cancel
             </Button>
           </DialogActions>
-        </Dialog>
-      </StyledMenu>
-    </div>
+        </form>
+      </Dialog>
+    </>
   );
 }

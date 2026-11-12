@@ -22,6 +22,19 @@ export default function (state = initialState, action) {
         orders: action.payload,
         loading: false
       };
+    case types.UPDATE_ORDER_SUCCESS:
+      return {
+        ...state,
+        items: {
+          ...state.items,
+          order: {
+            ...state.items.order,
+            orderItems: (state.items.order?.orderItems || []).map((item) =>
+              item._id === action.payload._id ? action.payload : item
+            )
+          }
+        }
+      };
 
     default:
       return state;

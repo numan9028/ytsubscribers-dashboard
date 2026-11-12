@@ -43,3 +43,22 @@ export const singleOrder = (id) => {
     }
   };
 };
+
+export const updateOrderItem = ({ id, ...data }) => async (dispatch) => {
+  dispatch({ type: types.UPDATE_ORDER_ATTEMPT });
+  try {
+    const res = await request({
+      url: `${process.env.REACT_APP_API_URL}/orders/update-order-item/${id}`,
+      method: 'PUT',
+      data
+    });
+    dispatch({
+      type: types.UPDATE_ORDER_SUCCESS,
+      payload: res.data.orderItem
+    });
+    return res.data.orderItem;
+  } catch (err) {
+    dispatch({ type: types.UPDATE_ORDER_FAIL, payload: err });
+    throw err;
+  }
+};
