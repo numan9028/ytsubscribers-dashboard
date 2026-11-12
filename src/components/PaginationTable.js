@@ -164,6 +164,21 @@ export default function PaginationTable(props) {
             }}
           >
             <DataGrid
+              sx={{
+                '& .MuiDataGrid-cell.order-items-cell': {
+                  alignItems: 'flex-start',
+                  py: 1
+                },
+                '& .MuiDataGrid-cell.order-items-cell .MuiDataGrid-cellContent': {
+                  flex: 1,
+                  height: '100%',
+                  whiteSpace: 'normal',
+                  alignItems: 'flex-start'
+                },
+                '& .MuiDataGrid-cell.order-actions-cell': {
+                  pr: 2
+                }
+              }}
               rows={rows}
               getRowId={(row) => row._id}
               columns={props.columns}
@@ -177,6 +192,9 @@ export default function PaginationTable(props) {
               // onRowSelectionModelChange={handleSelectionModelChange}
               paginationModel={paginationModel}
               paginationMode="server"
+              getRowHeight={(params) =>
+                Math.max(52, (params.model.orderItems?.length || 0) * 40 + 45)
+              }
               onPaginationModelChange={setPaginationModel}
               loading={loading}
             />
