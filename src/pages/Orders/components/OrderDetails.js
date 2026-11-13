@@ -6,6 +6,7 @@ import { sentenceCase } from 'change-case';
 import withRole from 'src/components/HOC/withRole';
 // material
 import {
+  Alert,
   Grid,
   Container,
   Stack,
@@ -35,7 +36,8 @@ const OrderDetails = (props) => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
+  const [fetchError, setFetchError] = React.useState('');
   const pageState = useSelector((state) => state.orders.items);
   // For User Role
   const userRole = props.user.userRole;
@@ -44,6 +46,7 @@ const OrderDetails = (props) => {
   const [pageSections, setPageSection] = useState({});
   const formData = pageState;
   const orderItems = pageState.order?.orderItems || [];
+  const orderLoaded = !loading && !fetchError && Boolean(pageState.order);
   const itemGroups = orderItems.reduce((groups, item) => {
     const packageId =
       typeof item.packageId === 'object' ? item.packageId?._id : item.packageId;
@@ -67,13 +70,16 @@ const OrderDetails = (props) => {
   }, [pageState.order]);
 
   useEffect(() => {
-    const fetchData = () => {
+    const fetchData = async () => {
+      setLoading(true);
+      setFetchError('');
       try {
-        setLoading(true);
-        dispatch(singleOrder(id));
-        setLoading(false);
+        await dispatch(singleOrder(id));
       } catch (error) {
-        setLoading(true);
+        console.error('Unable to fetch order details:', error);
+        setFetchError(error.response?.data?.message || 'Unable to load order details.');
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
@@ -102,6 +108,7 @@ const OrderDetails = (props) => {
           </Button>
         </Stack>
         {loading && <Loader />}
+        {!loading && fetchError && <Alert severity="error">{fetchError}</Alert>}
         {!loading && pageState.order && (
           <Grid container display="flex" alignItems="start" justifyContent="start" spacing={1}>
             <Grid item lg={6} md={6} xs={12} sm={12} mt={2}>
@@ -150,18 +157,32 @@ const OrderDetails = (props) => {
                       <strong> Order Date: </strong>
                       {moment(pageState.order.orderDate).format('MMMM Do, YYYY')}
                     </Typography>
+                    {pageState.order.paymentStatus !== 'initiated' && (
+                      <Button
+                        variant="contained"
+                        color="success"
+                        component="a"
+                        href={`https://www.ytsubscribers.com/track-order/${encodeURIComponent(
+                          pageState.order.orderId
+                        )}/`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Track Now
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               </Box>
             </Grid>
           </Grid>
         )}
-        {orderItems.length > 0 && (
+        {orderLoaded && orderItems.length > 0 && (
           <Typography variant="h4" gutterBottom mt={3}>
             Order Items
           </Typography>
         )}
-        {orderItems.length > 0 && (
+        {orderLoaded && orderItems.length > 0 && (
           <TableContainer component={Paper} sx={{ mt: 2, border: 1, borderColor: 'grey.300' }}>
             <Table aria-label="Order items" sx={{ minWidth: 760 }}>
               <TableHead>
@@ -272,44 +293,42 @@ const OrderDetails = (props) => {
             </Table>
           </TableContainer>
         )}
-        {pageState.order?.orderAddOns.length > 0 && (
+        {orderLoaded && pageState.order?.orderAddOns?.length > 0 && (
           <Typography variant="h4" gutterBottom mt={3}>
             Order Addons
           </Typography>
         )}
-        <Grid container display="flex">
-          {pageState.order?.orderAddOns
-            ? pageState.order.orderAddOns?.map((items, index) => {
-              return (
-                <Grid key={items._id} item lg={6} md={6} xs={12} sm={12} mt={2}>
-                  <Box sx={{ maxWidth: '98%', boxShadow: 3, borderRadius: '16px' }}>
-                    <Card>
-                      <CardContent>
-                        <Typography
-                          mt={1}
-                          mb={2}
-                          variant="body2"
-                          sx={{ fontSize: 17, textTransform: 'capitalize' }}
-                        >
-                          <strong>Addon Title:</strong> {items.title}
-                        </Typography>
-                        <Typography variant="body2" mt={1} mb={2} sx={{ fontSize: 17 }}>
-                          <strong>Quantity:</strong> {items.quantity}
-                        </Typography>
-                        <Typography variant="body2" mt={1} mb={2} sx={{ fontSize: 17 }}>
-                          <strong>Price:</strong> £{items.price}
-                        </Typography>
-                        <Typography variant="body2" mt={1} mb={2} sx={{ fontSize: 17 }}>
-                          <strong>Discount:</strong> {items.discount}%
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </Box>
-                </Grid>
-              );
-            })
-            : []}
-        </Grid>
+        {orderLoaded && (
+          <Grid container display="flex">
+            {pageState.order.orderAddOns?.map((items) => (
+              <Grid key={items._id} item lg={6} md={6} xs={12} sm={12} mt={2}>
+                <Box sx={{ maxWidth: '98%', boxShadow: 3, borderRadius: '16px' }}>
+                  <Card>
+                    <CardContent>
+                      <Typography
+                        mt={1}
+                        mb={2}
+                        variant="body2"
+                        sx={{ fontSize: 17, textTransform: 'capitalize' }}
+                      >
+                        <strong>Addon Title:</strong> {items.title}
+                      </Typography>
+                      <Typography variant="body2" mt={1} mb={2} sx={{ fontSize: 17 }}>
+                        <strong>Quantity:</strong> {items.quantity}
+                      </Typography>
+                      <Typography variant="body2" mt={1} mb={2} sx={{ fontSize: 17 }}>
+                        <strong>Price:</strong> £{items.price}
+                      </Typography>
+                      <Typography variant="body2" mt={1} mb={2} sx={{ fontSize: 17 }}>
+                        <strong>Discount:</strong> {items.discount}%
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
+        )}
       </Container>
     </Page>
   );

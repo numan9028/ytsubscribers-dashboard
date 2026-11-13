@@ -13,7 +13,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import Loader from 'src/components/Loader';
 import moment from 'moment';
 import { CalendarMonth } from '@mui/icons-material';
-import { Button } from '@mui/material';
 import { request } from 'src/Redux/helpers/axiosRequest';
 
 
@@ -26,7 +25,6 @@ export default function PaginationTable(props) {
   const [rowCount, setRowCount] = useState(0);
   const [month, setMonth] = useState(moment().format('MMMM'));
   const searchTimeout = React.useRef(null);
-  const [selectionModel, setSelectionModel] = React.useState([]);
   const getOrdersByPage= async (reqData) => {
     return request({
       url: `${process.env.REACT_APP_API_URL}/orders/get-all-by-page`,
@@ -143,11 +141,6 @@ export default function PaginationTable(props) {
               </MenuItem>
             ))}
           </Select>
-          {/* {props.match === 'testing' &&
-            <Button variant="contained" color="error" onClick={handleDeleteSelection}>
-              Delete Selection
-            </Button>
-          } */}
         </Stack>
         <Typography variant="h5" gutterBottom>
           Data Table
@@ -187,13 +180,10 @@ export default function PaginationTable(props) {
               autoHeight={true}
               disableSelectionOnClick
               disableColumnMenu
-              checkboxSelection={true}
-              rowSelectionModel={selectionModel}
-              // onRowSelectionModelChange={handleSelectionModelChange}
               paginationModel={paginationModel}
               paginationMode="server"
               getRowHeight={(params) =>
-                Math.max(52, (params.model.orderItems?.length || 0) * 40 + 45)
+                Math.max(52, (params.model.orderItems?.length || 0) * 30 + 35)
               }
               onPaginationModelChange={setPaginationModel}
               loading={loading}

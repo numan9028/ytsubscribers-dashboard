@@ -111,16 +111,20 @@ function Orders(props) {
     {
       field: 'orderItems',
       headerName: 'Items',
-      width: 460,
+      width: 320,
       sortable: false,
       cellClassName: 'order-items-cell',
       renderCell: ({ row }) => (
-        <Box sx={{ width: '100%', py: 0.5 }}>
+        <Box sx={{ width: '100%' }}>
           {row.orderItems?.length ? (
             <Table
               size="small"
               aria-label={`Items for order ${row.orderId}`}
-              sx={{ width: '100%', tableLayout: 'fixed' }}
+              sx={{
+                width: '100%',
+                tableLayout: 'fixed',
+                '& .MuiTableCell-root': { py: 0.25, px: 1, fontSize: '0.8rem' }
+              }}
             >
               <TableHead>
                 <TableRow
@@ -131,8 +135,13 @@ function Orders(props) {
                     }
                   }}
                 >
-                  <TableCell sx={{ width: '60%', fontWeight: 700 }}>User Name</TableCell>
+                  <TableCell sx={{ width: '20%', fontWeight: 700 }}>Link</TableCell>
                   <TableCell sx={{ width: '40%', fontWeight: 700 }}>Service</TableCell>
+                  <TableCell
+                    sx={{ width: '40%', fontWeight: 700, whiteSpace: 'normal', overflowWrap: 'anywhere' }}
+                  >
+                    API Order ID
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -141,19 +150,19 @@ function Orders(props) {
                   const service =
                     item.packageId?.packageTitle ||
                     [item.quantity, item.serviceType].filter(Boolean).join(' ');
+                  const apiOrderId = String(item.apiOrderId || '').trim() || 'Pending';
 
                   return (
                     <TableRow key={item._id} sx={{ backgroundColor: 'grey.100' }}>
                       <TableCell
-                        title={link}
                         sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                       >
-                        {/^https?:\/\//i.test(link) ? (
+                        {link && /^https?:\/\//i.test(link) ? (
                           <a href={link} target="_blank" rel="noopener noreferrer">
-                            {link}
+                            Link
                           </a>
                         ) : (
-                          link || '—'
+                          link ? 'Link' : '—'
                         )}
                       </TableCell>
                       <TableCell
@@ -161,6 +170,12 @@ function Orders(props) {
                         sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                       >
                         {service || '—'}
+                      </TableCell>
+                      <TableCell
+                        title={apiOrderId}
+                        sx={{ whiteSpace: 'normal', overflowWrap: 'anywhere' }}
+                      >
+                        {apiOrderId}
                       </TableCell>
                     </TableRow>
                   );
@@ -174,15 +189,24 @@ function Orders(props) {
       )
     },
     {
+      field: 'totalAmount',
+      headerName: 'Total',
+      width: 120,
+      renderCell: ({ row }) =>
+        row.totalAmount == null ? '—' : <>{row.currency || '£'}{row.totalAmount}</>
+    },
+    {
       field: 'amountPaid',
-      headerName: 'Amout Paid',
+      headerName: 'Paid',
       width: 100,
-      renderCell: (params) => <>£{params.value}</>
+      renderCell: ({ row }) =>
+        row.amountPaid == null ? '—' : <>{row.currency || '£'}{row.amountPaid}</>
     },
     {
       field: 'promoDiscountPercent',
-      headerName: 'Discount Percent',
-      width: 130
+      headerName: 'Discount%',
+      width: 130,
+      renderCell: ({ value }) => (value == null ? '—' : `${value}%`)
     },
     {
       field: 'orderDate',
