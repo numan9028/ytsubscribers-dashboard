@@ -17,7 +17,7 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import RestartAltSharpIcon from '@mui/icons-material/RestartAltSharp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { updateOrderItem } from 'src/Redux/actions/ordersActions';
+import { reprocessOrderItem, updateOrderItem } from 'src/Redux/actions/ordersActions';
 
 const StyledMenu = styled((props) => (
   <Menu
@@ -56,11 +56,12 @@ const StyledMenu = styled((props) => (
   }
 }));
 
-export default function OrderActionButton({ item }) {
+export default function OrderActionButton({ item, onReprocessed }) {
   const dispatch = useDispatch();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
+  const [processing, setProcessing] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState('');
   const [formValues, setFormValues] = React.useState({
     link: item.link || '',
@@ -126,6 +127,34 @@ export default function OrderActionButton({ item }) {
     }
   };
 
+  const handleReprocess = async () => {
+    setAnchorEl(null);
+    const confirmation = item.apiOrderId
+      ? `This item already has API order ID ${item.apiOrderId}. Reprocessing may create a duplicate order. Continue?`
+      : 'This item has no API order ID. Submit it for processing now?';
+    if (!window.confirm(confirmation)) {
+      return;
+    }
+
+    setProcessing(true);
+    try {
+      const result = await dispatch(reprocessOrderItem(item._id));
+      toast.success(result.message);
+      try {
+        await onReprocessed();
+      } catch (error) {
+        console.error('Unable to refresh order after reprocessing:', error);
+        toast.error('The item was reprocessed, but order details could not be refreshed.');
+      }
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || 'Unable to reprocess this order item. Please try again.'
+      );
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   return (
     <>
       <Button
@@ -135,6 +164,7 @@ export default function OrderActionButton({ item }) {
         aria-expanded={menuOpen ? 'true' : undefined}
         variant="contained"
         disableElevation
+        disabled={processing}
         onClick={(event) => setAnchorEl(event.currentTarget)}
         endIcon={<KeyboardArrowDownIcon />}
       >
@@ -151,9 +181,9 @@ export default function OrderActionButton({ item }) {
           <EditIcon />
           Edit
         </MenuItem>
-        <MenuItem onClick={handleMenuClose} disableRipple>
+        <MenuItem onClick={handleReprocess} disabled={processing} disableRipple>
           <RestartAltSharpIcon />
-          Reprocessed
+          {processing ? 'Reprocessing...' : 'Reprocessed'}
         </MenuItem>
       </StyledMenu>
       <Dialog

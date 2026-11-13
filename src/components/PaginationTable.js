@@ -107,7 +107,7 @@ export default function PaginationTable(props) {
         fetchData();
       }, 500);
     }
-  }, [paginationModel, month, searchText]);
+  }, [paginationModel, month, searchText, props.refreshKey]);
   return (
     <>
       <div style={{ width: '100%' }}>

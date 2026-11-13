@@ -9,11 +9,14 @@ import {
   TableBody,
   TableCell,
   TableHead,
-  TableRow
+  TableRow,
+  Tooltip
 } from '@mui/material';
 import Tabs, { tabsClasses } from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import KeyboardReturnIcon from '@mui/icons-material/KeyboardReturn';
+import { toast } from 'react-toastify';
+import { request } from 'src/Redux/helpers/axiosRequest';
 
 // import OrderActionButton from './components/OrderActionButton';
 import withRole from 'src/components/HOC/withRole';
@@ -27,6 +30,8 @@ function Orders(props) {
   // Searchable Filters
   const [loading, setLoading] = React.useState(false);
   const [tabValue, setTabValue] = React.useState(0);
+  const [refreshKey, setRefreshKey] = React.useState(0);
+  const [refundingOrderId, setRefundingOrderId] = React.useState(null);
   // For User Role
   const userRole = props.user.userRole;
 
@@ -38,6 +43,26 @@ function Orders(props) {
       return type;
     };
   }, []);
+
+  const handleRefund = async (order) => {
+    if (!window.confirm('Do you really want to refund this order?')) {
+      return;
+    }
+
+    setRefundingOrderId(order.orderId);
+    try {
+      await request({
+        url: `${process.env.REACT_APP_API_URL}/orders/refund/${encodeURIComponent(order.orderId)}`,
+        method: 'PUT'
+      });
+      toast.success('Order marked as refunded.');
+      setRefreshKey((current) => current + 1);
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Unable to refund order. Please try again.');
+    } finally {
+      setRefundingOrderId(null);
+    }
+  };
 
   function TabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -192,15 +217,21 @@ function Orders(props) {
             >
               Track
             </Button>
-            <Button
-              type="button"
-              size="small"
-              variant="contained"
-              color="warning"
-              startIcon={<KeyboardReturnIcon />}
-            >
-              Refund
-            </Button>
+            <Tooltip title={row.orderStatus === 'refunded' ? 'Refunded' : ''}>
+              <span>
+                <Button
+                  type="button"
+                  size="small"
+                  variant="contained"
+                  color="warning"
+                  startIcon={<KeyboardReturnIcon />}
+                  disabled={row.orderStatus === 'refunded' || refundingOrderId === row.orderId}
+                  onClick={() => handleRefund(row)}
+                >
+                  Refund
+                </Button>
+              </span>
+            </Tooltip>
           </Stack>
         )
     }
@@ -243,6 +274,7 @@ function Orders(props) {
             match="succeeded"
             columns={columns}
             loading={loading}
+            refreshKey={refreshKey}
           />
         </TabPanel>
           <TabPanel value={tabValue} index={1}>
@@ -250,6 +282,7 @@ function Orders(props) {
               match="initiated"
               columns={columns}
               loading={loading}
+              refreshKey={refreshKey}
             />
           </TabPanel>
        
@@ -258,6 +291,7 @@ function Orders(props) {
               match="testing"
               columns={columns}
               loading={loading}
+              refreshKey={refreshKey}
             />
           </TabPanel>
       </Box>
@@ -266,7 +300,7 @@ function Orders(props) {
 }
 
 export default withRole(Orders);
-const OrderTabPanel = ({ match, columns, loading }) => {
+const OrderTabPanel = ({ match, columns, loading, refreshKey }) => {
   return (
     <PaginationTable
       searchPlaceholder="Search..."
@@ -274,6 +308,7 @@ const OrderTabPanel = ({ match, columns, loading }) => {
       match={match}
       columns={columns}
       loading={loading}
+      refreshKey={refreshKey}
      
     />
   );

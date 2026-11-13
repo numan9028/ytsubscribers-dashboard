@@ -62,3 +62,11 @@ export const updateOrderItem = ({ id, ...data }) => async (dispatch) => {
     throw err;
   }
 };
+
+export const reprocessOrderItem = (id) => async () => {
+  const res = await request({
+    url: `${process.env.REACT_APP_API_URL}/orders/reprocess-item/${id}`,
+    method: 'PUT'
+  });
+  return res.data;
+};

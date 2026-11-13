@@ -253,7 +253,10 @@ const OrderDetails = (props) => {
                                       {item.comments ? item.comments : <em>empty</em>}
                                     </TableCell>
                                     <TableCell>
-                                      <OrderActionButton item={item} />
+                                      <OrderActionButton
+                                        item={item}
+                                        onReprocessed={() => dispatch(singleOrder(id))}
+                                      />
                                     </TableCell>
                                   </TableRow>
                                 ))}
