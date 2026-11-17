@@ -21,7 +21,8 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TableRow
+  TableRow,
+  TextField
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 // components
@@ -184,14 +185,17 @@ const OrderDetails = (props) => {
         )}
         {orderLoaded && orderItems.length > 0 && (
           <TableContainer component={Paper} sx={{ mt: 2, border: 1, borderColor: 'grey.300' }}>
-            <Table aria-label="Order items" sx={{ minWidth: 760 }}>
+            <Table aria-label="Order items" sx={{ minWidth: 1450 }}>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 700 }}>Items</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Title</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>API Id</TableCell>
+                  <TableCell sx={{ fontWeight: 700, width: 180, maxWidth: 180 }}>Title</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>Service ID</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>Package Quantity</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Price</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Post ID</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Per Post</TableCell>
+                  <TableCell sx={{ fontWeight: 700, width: 240 }}>Comments</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Action</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -199,95 +203,64 @@ const OrderDetails = (props) => {
                   const firstItem = group.items[0];
                   const packageDetails =
                     typeof firstItem.packageId === 'object' ? firstItem.packageId : {};
-                  const durationDetails =
-                    typeof firstItem.packageDurationId === 'object'
-                      ? firstItem.packageDurationId
-                      : {};
-                  const price = durationDetails.priceDuration ?? packageDetails.price;
-                  return (
-                    <React.Fragment key={group.key}>
-                      <TableRow>
-                        <TableCell>{group.items.length}</TableCell>
-                        <TableCell>
-                          {packageDetails.packageTitle || sentenceCase(firstItem.serviceType || '')}
-                        </TableCell>
-                        <TableCell>{firstItem.serviceId || '—'}</TableCell>
-                        <TableCell>{packageDetails.quantity ?? firstItem.quantity ?? '—'}</TableCell>
-                        <TableCell>
-                          {price == null ? '—' : `${pageState.order.currency || ''}${price}`}
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell colSpan={5} sx={{ py: 0 }}>
-                          <Box sx={{ py: 2, px: 1 }}>
-                            <Typography variant="subtitle1" fontWeight={700} align="center" mb={1}>
-                              Order Posts
-                            </Typography>
-                            <Table
-                              size="small"
-                              aria-label="Order posts"
-                              sx={{ tableLayout: 'fixed', width: '100%' }}
-                            >
-                              <TableHead>
-                                <TableRow>
-                                  <TableCell sx={{ width: '12%', fontWeight: 700 }}>Post ID</TableCell>
-                                  <TableCell sx={{ width: '12%', fontWeight: 700 }}>
-                                    Per Post
-                                  </TableCell>
-                                  <TableCell sx={{ width: '15%', fontWeight: 700 }}>API Id</TableCell>
-                                  <TableCell
-                                    sx={{ width: 300, minWidth: 300, maxWidth: 300, fontWeight: 700 }}
-                                  >
-                                    Comments
-                                  </TableCell>
-                                  <TableCell sx={{ width: 130, fontWeight: 700 }}>Action</TableCell>
-                                </TableRow>
-                              </TableHead>
-                              <TableBody>
-                                {group.items.map((item) => (
-                                  <TableRow key={item._id}>
-                                    <TableCell>
-                                      {item.link ? (
-                                        <a
-                                          href={item.link}
-                                          className="order-details-link"
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                        >
-                                          Link
-                                        </a>
-                                      ) : (
-                                        '—'
-                                      )}
-                                    </TableCell>
-                                    <TableCell>{item.quantity ?? '—'}</TableCell>
-                                    <TableCell>{item.apiOrderId || '—'}</TableCell>
-                                    <TableCell
-                                      sx={{
-                                        width: 300,
-                                        minWidth: 300,
-                                        maxWidth: 300,
-                                        whiteSpace: 'normal',
-                                        overflowWrap: 'anywhere'
-                                      }}
-                                    >
-                                      {item.comments ? item.comments : <em>empty</em>}
-                                    </TableCell>
-                                    <TableCell>
-                                      <OrderActionButton
-                                        item={item}
-                                        onReprocessed={() => dispatch(singleOrder(id))}
-                                      />
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
-                              </TableBody>
-                            </Table>
-                          </Box>
-                        </TableCell>
-                      </TableRow>
-                    </React.Fragment>
-                  );
+                  return group.items.map((item) => (
+                    <TableRow key={item._id}>
+                      <TableCell>{item.apiOrderId || '—'}</TableCell>
+                      <TableCell
+                        sx={{
+                          width: 180,
+                          maxWidth: 180,
+                          whiteSpace: 'normal',
+                          overflowWrap: 'anywhere'
+                        }}
+                      >
+                        {packageDetails.packageTitle || sentenceCase(firstItem.serviceType || '')}
+                      </TableCell>
+                      <TableCell>{firstItem.serviceId || '—'}</TableCell>
+                      <TableCell>{packageDetails.quantity ?? firstItem.quantity ?? '—'}</TableCell>
+                      <TableCell>
+                        {item.link ? (
+                          <a
+                            href={item.link}
+                            className="order-details-link"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Link
+                          </a>
+                        ) : (
+                          '—'
+                        )}
+                      </TableCell>
+                      <TableCell>{item.quantity ?? '—'}</TableCell>
+                      <TableCell sx={{ width: 240, maxWidth: 240 }}>
+                        {item.comments ? (
+                          <TextField
+                            aria-label="Comments"
+                            multiline
+                            rows={3}
+                            value={item.comments}
+                            InputProps={{ readOnly: true }}
+                            sx={{
+                              width: 220,
+                              '& textarea': {
+                                resize: 'vertical',
+                                overflowY: 'auto'
+                              }
+                            }}
+                          />
+                        ) : (
+                          <em>empty</em>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <OrderActionButton
+                          item={item}
+                          onReprocessed={() => dispatch(singleOrder(id))}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ));
                 })}
               </TableBody>
             </Table>
