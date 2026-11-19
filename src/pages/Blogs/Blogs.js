@@ -73,10 +73,10 @@ const Blogs = () => {
       renderCell: (rowData) => <>{rowData.row.active == true ? 'Active' : 'In-Active'}</>
     },
     {
-      field: 'createdAt',
-      headerName: 'Created At',
+      field: 'updatedAt',
+      headerName: 'Updated At',
       width: 130,
-      renderCell: (rowData) => new Date(rowData.row.createdAt).toDateString()
+      renderCell: (rowData) => new Date(rowData.row.updatedAt).toDateString()
     },
     {
       field: 'action',
